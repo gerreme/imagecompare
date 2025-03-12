@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Comparison Thing</title>
+    <style>
+        .container {
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .slider-container {
+            position: relative;
+            max-width: 800px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+        }
+        .image-before,
+        .image-after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+        }
+        .image-before {
+            width: 50%;
+            z-index: 2;
+            border-right: 3px solid white;
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 3px;
+            height: 100%;
+            background-color: white;
+            cursor: col-resize;
+            z-index: 3;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="document.getElementById('beforeInput').click()">Select Before Image</button>
+        <button onclick="document.getElementById('afterInput').click()">Select After Image</button>
+        <button onclick="handleUpload()">UPLOAD</button>
+        
+        <input type="file" id="beforeInput" accept="image/*" hidden>
+        <input type="file" id="afterInput" accept="image/*" hidden>
+        
+        <div id="sliderContainer" class="slider-container hidden">
+            <div class="image-container">
+                <div class="image-before"></div>
+                <div class="image-after"></div>
+                <div class="slider-handle" onmousedown="startDragging(event)"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let beforeImage = null;
+        let afterImage = null;
+        let isDragging = false;
+
+        document.getElementById('beforeInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            beforeImage = URL.createObjectURL(file);
+        });
+
+        document.getElementById('afterInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            afterImage = URL.createObjectURL(file);
+        });
+
+        function handleUpload() {
+            if (!beforeImage || !afterImage) {
+                alert('Please select both images first!');
+                return;
+            }
+
+            const sliderContainer = document.getElementById('sliderContainer');
+            sliderContainer.classList.remove('hidden');
+            
+            document.querySelector('.image-before').style.backgroundImage = `url(${beforeImage})`;
+            document.querySelector('.image-after').style.backgroundImage = `url(${afterImage})`;
+        }
+
+        function startDragging(e) {
+            isDragging = true;
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDragging);
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            
+            const container = document.querySelector('.slider-container');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const percentage = (x / rect.width) * 100;
+            
+            const before = document.querySelector('.image-before');
+            const handle = document.querySelector('.slider-handle');
+            
+            before.style.width = `${percentage}%`;
+            handle.style.left = `${percentage}%`;
+        }
+
+        function stopDragging() {
+            isDragging = false;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDragging);
+        }
+    </script>
+</body>
+</html>
